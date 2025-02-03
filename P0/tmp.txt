@@ -1,3 +1,0 @@
-Este es una archivo temporal
-que vamos a borra para aprender 
-a eliminar ficheros del repo...
