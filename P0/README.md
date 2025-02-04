@@ -1,6 +1,6 @@
 # Práctica 0
 
-## Enuncuado:
+## Enunciado P0:
 
 Crea la wiki asociada a tu repositorio LTAW-Practicas. La página principal de esta wiki deberá contener la siguiente información, divida en apartados independientes:
 
