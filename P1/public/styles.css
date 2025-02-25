@@ -16,6 +16,7 @@ header {
 
 main {
     padding: 20px;
+    padding-bottom: 80px;
 }
 
 .productos {
@@ -48,6 +49,14 @@ main {
     margin-bottom: 15px;
 }
 
+/* Estilos específicos para las imágenes en las páginas de producto */
+.imagen-producto {
+    max-width: 250px; /* Ajusta este valor según lo que necesites */
+    height: auto; /* Mantiene la proporción de la imagen */
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
 .producto h3 {
     font-size: 1.5em;
     color: #ffd700; /* Título dorado para resaltar */
@@ -76,9 +85,11 @@ main {
 }
 
 .detalle-producto p {
+    text-align: justify;
     font-size: 1.2em;
     color: #e0e0e0;
     margin: 10px 0;
+    line-height: 1.6;
 }
 
 footer {
@@ -90,6 +101,7 @@ footer {
     width: 100%;
     bottom: 0;
     border-top: 2px solid #ffd700; /* Línea dorada para el footer */
+    height: 60px;
 }
 
 /* Estilos específicos para la página 404 */
