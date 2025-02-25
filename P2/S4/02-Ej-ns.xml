@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Esto son comentarios -->
+
+<tienda xmlns:t1="https://github.com/dborja2021/LTAW-Practicas"
+        xmlns:t2="https://github.com/dborja2021">
+<t1:producto>
+    Un producto
+</t1:producto>
+
+<t2:producto>
+    <nombre>Otro producto</nombre>
+    <origen>España</origen>
+</t2:producto>
+
+</tienda>
