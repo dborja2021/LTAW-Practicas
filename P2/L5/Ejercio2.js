@@ -21,11 +21,18 @@ tienda.usuarios.forEach((element, index)=>{
 });
 
 //-- Mostrar numero de productos
-console.log("\nProductos en la tienda: " + tienda.productos.length);
+//-- Calcular el stock total de todos los productos
+const stockTotal = tienda.productos.reduce((total, producto) => {
+  return total + parseInt(producto.stock); // Convertir el stock a número y sumarlo
+}, 0);
 
-//-- Recorrer el array de productos
-tienda.productos.forEach((element, index)=>{
-  console.log("Producto " + (index + 1) + ": " + element["nombre"]);
+//-- Mostrar el stock total
+console.log("\nNumero total de productos: " + stockTotal);
+
+//-- Mostrar el stock de cada producto
+console.log("Productos:");
+tienda.productos.forEach((producto, index) => {
+  console.log("Producto " + (index + 1) + ": " + producto.nombre + " - Stock: " + producto.stock);
 });
 
 //-- Mostrar numero de pedidos
