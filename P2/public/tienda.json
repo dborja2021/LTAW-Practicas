@@ -1,0 +1,61 @@
+{
+  "usuarios": [
+    {
+      "nombre": "root",
+      "nombre_real": "Administador",
+      "password": "1234",
+      "email": "root@tienda.com"
+    },
+    {
+      "nombre": "usuario1",
+      "nombre_real": "Daniel Borja",
+      "password": "5678",
+      "email": "dani@ltaw.com"
+    },
+    {
+      "nombre": "usuario2",
+      "nombre_real": "Pedro Pérez",
+      "email": "pedrito.perez@ltaw.com"
+    }
+  ],
+  
+  "productos": [
+    {
+      "nombre": "PAC-MAN x CASIO Vintage Colection",
+      "descripcion": "La esfera del reloj está diseñada para evocar un escenario de juego con los personajes conocidos corriendo por el laberinto de la pantalla del juego, y está contorneada por un bisel amarillo para proyectar el aspecto de una máquina recreativa. El fondo de la caja lleva grabados los personajes y el logotipo de PAC-MAN. La correa está fabricada con resina de base biológica, un material que se espera que ayude a reducir el impacto medioambiental. Se presenta en un embalaje especial con un diseño de máquina recreativa.",
+      "precio": "70.90",
+      "stock": "6"
+    },
+    {
+      "nombre": "CASIO Analógico-Digital",
+      "descripcion": "La clásica combinación analógica-digital en tonos hermosos. Con una esfera iridiscente que proporciona un toque de color y elegancia en un diseño consagrado. Cuenta con resistencia al agua en las tareas diarias y con funciones prácticas, como cronómetro, alarma y mucho más.",
+      "precio": "69.90",
+      "stock": "13"
+    },
+    {
+      "nombre": "CASIO Multifunción",
+      "descripcion": "Estilo atrevido, funcionalidad práctica: un nuevo diseño de reloj digital multifuncional inspirado en el amor por los artilugios. Con una esfera digital situada en la parte superior izquierda, puedes mantener la hora de vuelta a casa siempre visible, incluso mientras usas otras funciones como el cronómetro. El mapa del mundo en la parte superior derecha se sincroniza con la hora actual en la pantalla LCD inferior, ayudándote a seguir tu ubicación en cualquier momento del viaje. Este resistente reloj está equipado con características fiables, como una batería de 10 años, resistencia al agua de hasta 10 bares, retroiluminación LED, cronómetro y mucho más, garantizando rendimiento en cualquier aventura.",
+      "precio": "49.90",
+      "stock": "2"
+    }
+  ],
+  "pedidos": [
+    {
+      "nombre_usuario": "usuario1",
+      "direccion": "Calle Falsa 123, Springfield",
+      "tarjeta": "1234-5678-9012-3456",
+      "productos": [
+        "CASIO Multifunción",
+        "CASIO Analógico-Digital"
+      ]
+    },
+    {
+      "nombre_usuario": "usuario2",
+      "direccion": "Camino del Molino 5, Fuenlabrada",
+      "tarjeta": "0987-6543-2109-8765",
+      "productos": [
+        "PAC-MAN x CASIO Vintage Colection"
+      ]
+    }
+  ]
+}
