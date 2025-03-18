@@ -10,7 +10,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
         .then(response => response.json())
         .then(data => {
             // Buscar el usuario en el array de usuarios
-            const usuario = data.usuarios.find(user => user.nombre === username && user.contrasena === password);
+            const usuario = data.usuarios.find(user => user.nombre === username && user.password === password);
 
             if (usuario) {
                 // Si el usuario existe y la contraseña coincide

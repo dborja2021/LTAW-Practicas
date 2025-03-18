@@ -2,6 +2,7 @@
     "configurations": [
         
         
+        
         {
             "name": "Electron Main",
             "program": "${file}",
