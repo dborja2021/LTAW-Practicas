@@ -36,6 +36,19 @@ const server = http.createServer((req, res) => {
         });
         return;
     }
+    if (req.url === "/carrito.html") {
+        const filePath = path.join(PUBLIC_DIR, "carrito.html");
+        fs.readFile(filePath, (err, content) => {
+            if (err) {
+                res.writeHead(500, { "Content-Type": "text/html" });
+                res.end("<h1>500 Internal Server Error</h1>");
+            } else {
+                res.writeHead(200, { "Content-Type": "text/html" });
+                res.end(content);
+            }
+        });
+        return;
+    }
 
     // Manejar la ruta /productos
     if (req.url === "/productos") {

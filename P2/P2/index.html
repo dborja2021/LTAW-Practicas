@@ -30,6 +30,7 @@
     </footer>
 
     <script src="session.js"></script>
+    <script src="cart.js"></script>
     <script>
         // Cargar los datos del archivo tienda.json
         fetch('/tienda.json')
@@ -73,6 +74,20 @@
                     <button onclick="window.location.reload()" style="margin-top: 10px;">Reintentar</button>
                 `;
             });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar/ocultar carrito según sesión
+            const usuario = JSON.parse(localStorage.getItem('currentUser'));
+            const cartIcon = document.getElementById('cart-icon');
+            
+            if (usuario) {
+                cartIcon.style.display = 'flex';
+                updateCartCount();
+            }
+
+            // Cargar productos...
+        });
     </script>
 </body>
 </html>

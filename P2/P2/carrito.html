@@ -63,6 +63,20 @@
     <script src="cart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+        
+        if (!usuario) {
+            document.getElementById("cart-items-container").innerHTML = `
+                <div class="empty-cart">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h2>Debes iniciar sesión para ver tu carrito</h2>
+                    <a href="login.html" class="cart-btn continue-shopping-btn">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                    </a>
+                </div>
+            `;
+            return;
+        }
             // Cargar y mostrar los productos del carrito
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const container = document.getElementById('cart-items-container');
