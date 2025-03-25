@@ -13,6 +13,8 @@ const mimeTypes = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".png": "image/png",
+    ".js": "application/javascript",
+    ".json": "application/json"
 };
 
 // Leer el archivo JSON con los productos
@@ -21,6 +23,7 @@ const tienda = JSON.parse(tienda_json);
 
 // Servidor HTTP
 const server = http.createServer((req, res) => {
+    // Manejar la ruta /tienda.json
     if (req.url === "/tienda.json") {
         fs.readFile(FICHERO_JSON, (err, data) => {
             if (err) {
@@ -31,6 +34,7 @@ const server = http.createServer((req, res) => {
                 res.end(data);
             }
         });
+        return;
     }
 
     // Manejar la ruta /productos
@@ -70,11 +74,10 @@ const server = http.createServer((req, res) => {
                 <h1>Listado de Productos</h1>
         `;
 
-        // Recorrer la lista de productos y agregarlos al HTML
-        tienda.productos.forEach((producto) => {
+        tienda.producto.forEach((producto) => {
             html += `
                 <div class="producto">
-                    <h2>${producto.nombre}</h2>
+                    <h2>${producto.nombreProducto}</h2>
                     <p><strong>Descripción:</strong> ${producto.descripcion}</p>
                     <p><strong>Precio:</strong> ${producto.precio} €</p>
                     <p><strong>Stock:</strong> ${producto.stock} unidades</p>
@@ -82,25 +85,21 @@ const server = http.createServer((req, res) => {
             `;
         });
 
-        // Cerrar el HTML
         html += `
             </body>
             </html>
         `;
 
-        // Enviar la respuesta con el HTML generado
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(html);
-    } else {
-        // Manejar otras rutas (archivos estáticos)
-        let filePath = path.join(PUBLIC_DIR, req.url === "/" ? "index.html" : req.url);
-        const extname = path.extname(filePath);
-        const contentType = mimeTypes[extname] || "application/octet-stream";
+        return;
+    }
 
-        // Verificar si el archivo solicitado existe
+    // Manejar la página de producto (producto.html con parámetros)
+    if (req.url === "/producto.html" || req.url.startsWith("/producto.html?")) {
+        const filePath = path.join(PUBLIC_DIR, "producto.html");
         fs.readFile(filePath, (err, content) => {
             if (err) {
-                // Si el archivo no se encuentra, servir 404.html
                 if (err.code === "ENOENT") {
                     const errorPage = path.join(PUBLIC_DIR, "404.html");
                     fs.readFile(errorPage, (error, errorContent) => {
@@ -108,15 +107,47 @@ const server = http.createServer((req, res) => {
                         res.end(errorContent || "<h1>404 Not Found</h1>");
                     });
                 } else {
-                    // Si hubo otro error (por ejemplo, error de servidor)
                     res.writeHead(500, { "Content-Type": "text/html" });
                     res.end("<h1>500 Internal Server Error</h1>");
                 }
             } else {
-                // Si el archivo existe, enviarlo con el tipo MIME correcto
+                res.writeHead(200, { "Content-Type": "text/html" });
+                res.end(content);
+            }
+        });
+        return;
+    }
+
+    // Manejar otras rutas (archivos estáticos)
+    let filePath = path.join(PUBLIC_DIR, req.url === "/" ? "index.html" : req.url);
+    const extname = path.extname(filePath);
+    const contentType = mimeTypes[extname] || "application/octet-stream";
+
+    // Verificar si la solicitud es para un archivo (no directorio)
+    if (extname) {
+        fs.readFile(filePath, (err, content) => {
+            if (err) {
+                if (err.code === "ENOENT") {
+                    const errorPage = path.join(PUBLIC_DIR, "404.html");
+                    fs.readFile(errorPage, (error, errorContent) => {
+                        res.writeHead(404, { "Content-Type": "text/html" });
+                        res.end(errorContent || "<h1>404 Not Found</h1>");
+                    });
+                } else {
+                    res.writeHead(500, { "Content-Type": "text/html" });
+                    res.end("<h1>500 Internal Server Error</h1>");
+                }
+            } else {
                 res.writeHead(200, { "Content-Type": contentType });
                 res.end(content);
             }
+        });
+    } else {
+        // Si no es un archivo, servir 404
+        const errorPage = path.join(PUBLIC_DIR, "404.html");
+        fs.readFile(errorPage, (error, errorContent) => {
+            res.writeHead(404, { "Content-Type": "text/html" });
+            res.end(errorContent || "<h1>404 Not Found</h1>");
         });
     }
 });

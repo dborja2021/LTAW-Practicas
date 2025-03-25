@@ -30,20 +30,33 @@
     <script>
         // Cargar los datos del archivo tienda.json
         fetch('/tienda.json')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cargar los productos');
+                }
+                return response.json();
+            })
             .then(data => {
                 const productosContainer = document.getElementById('productos-container');
+                
+                if (!data.producto || data.producto.length === 0) {
+                    productosContainer.innerHTML = "<p class='error'>No hay productos disponibles en este momento.</p>";
+                    return;
+                }
 
                 // Recorrer la lista de productos y crear elementos dinámicamente
                 data.producto.forEach((producto, index) => {
                     const productoElement = document.createElement('article');
                     productoElement.classList.add('producto');
 
+                    // Cambiado a producto.html con parámetro de índice
                     productoElement.innerHTML = `
-                        <img src="images/producto${index + 1}.png" alt="${producto.nombreProducto}">
+                        <img src="images/producto${index + 1}.png" alt="${producto.nombreProducto}" 
+                            onerror="this.src='images/placeholder.png'; this.onerror=null;">
                         <h2>${producto.nombreProducto}</h2>
-                        <p>${producto.nombreProducto}</p> <!-- Puedes cambiar esto si tienes un campo específico para el modelo -->
-                        <a href="producto${index + 1}.html?producto=${index + 1}">Ver más</a>
+                        <p class="price">${producto.precio} €</p>
+                        <p class="stock">${producto.stock} unidades disponibles</p>
+                        <a href="producto.html?id=${index}">Ver detalles</a>
                     `;
 
                     productosContainer.appendChild(productoElement);
@@ -52,7 +65,10 @@
             .catch(error => {
                 console.error("Error al cargar los datos:", error);
                 const productosContainer = document.getElementById('productos-container');
-                productosContainer.innerHTML = "<p>Error al cargar los productos. Inténtalo de nuevo más tarde.</p>";
+                productosContainer.innerHTML = `
+                    <p class="error">Error al cargar los productos. Inténtalo de nuevo más tarde.</p>
+                    <button onclick="window.location.reload()" style="margin-top: 10px;">Reintentar</button>
+                `;
             });
     </script>
 </body>

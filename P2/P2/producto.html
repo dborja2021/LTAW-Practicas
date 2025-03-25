@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Producto - Tienda Online</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>TimeHub</h1>
+        <div id="user-info">
+            <span id="user-name"></span>
+            <button id="logout" style="display: none;">Cerrar sesión</button>
+            <a href="login.html" id="login-link">Iniciar sesión</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="producto-detalle" id="producto-container">
+            <img id="imagen-producto" src="" alt="Imagen del producto" class="imagen-producto">
+            <div class="info-producto">
+                <h1 id="nombre-producto" class="nombre-producto">Cargando producto...</h1>
+                <p id="precio-producto" class="precio-producto">-- €</p>
+                <p id="stock-producto" class="stock-producto"></p>
+                <p id="descripcion-producto" class="descripcion-producto"></p>
+                <a href="index.html" class="volver-link">← Volver a la tienda</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Tienda Online. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="session.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el ID del producto de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if (productId === null || isNaN(productId)) {
+                mostrarError("ID de producto no válido");
+                return;
+            }
+
+            // Cargar datos del producto
+            fetch('/tienda.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar los datos');
+                    return response.json();
+                })
+                .then(data => {
+                    const producto = data.producto[productId];
+                    
+                    if (!producto) {
+                        mostrarError("Producto no encontrado");
+                        return;
+                    }
+
+                    // Mostrar información del producto
+                    document.getElementById('nombre-producto').textContent = producto.nombreProducto;
+                    document.getElementById('precio-producto').textContent = `${producto.precio} €`;
+                    document.getElementById('stock-producto').textContent = 
+                        `${producto.stock} unidades disponibles`;
+                    document.getElementById('stock-producto').style.color = 
+                        producto.stock > 0 ? '#4CAF50' : '#F44336';
+                    document.getElementById('descripcion-producto').textContent = producto.descripcion;
+                    
+                    // Cargar imagen
+                    const imgElement = document.getElementById('imagen-producto');
+                    imgElement.src = `images/producto${parseInt(productId) + 1}.png`;
+                    imgElement.alt = producto.nombreProducto;
+                    imgElement.onerror = function() {
+                        this.src = 'images/placeholder.png';
+                        this.onerror = null;
+                    };
+                    
+                    // Actualizar título de la página
+                    document.title = `${producto.nombreProducto} - TimeHub`;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    mostrarError("Error al cargar la información del producto");
+                });
+        });
+
+        function mostrarError(mensaje) {
+            const container = document.getElementById('producto-container');
+            container.innerHTML = `
+                <div class="error-message">
+                    <h2>Error</h2>
+                    <p>${mensaje}</p>
+                    <a href="index.html" class="volver-link">← Volver a la tienda</a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
