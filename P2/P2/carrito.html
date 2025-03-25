@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - TimeHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>TimeHub - Carrito de Compras</h1>
+        <div id="user-info">
+            <span id="user-name"></span>
+            <button id="logout" style="display: none;">Cerrar sesión</button>
+            <a href="login.html" id="login-link">Iniciar sesión</a>
+        </div>
+    </header>
+
+    <div id="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-count">0</span>
+    </div>
+
+    <main>
+        <div class="cart-container">
+            <h2 class="cart-title">Tu Carrito de Compras</h2>
+            <div id="cart-items-container">
+                <!-- Los productos del carrito se cargarán aquí -->
+            </div>
+            
+            <div class="cart-summary" id="cart-summary" style="display: none;">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">0.00 €</span>
+                </div>
+                <div class="summary-row">
+                    <span>Envío:</span>
+                    <span id="shipping">Gratis</span>
+                </div>
+                <div class="summary-row cart-total">
+                    <span>Total:</span>
+                    <span id="total">0.00 €</span>
+                </div>
+            </div>
+            
+            <div class="cart-actions" id="cart-actions" style="display: none;">
+                <a href="index.html" class="cart-btn continue-shopping-btn">
+                    <i class="fas fa-arrow-left"></i> Seguir comprando
+                </a>
+                <a href="#" class="cart-btn checkout-btn">
+                    <i class="fas fa-credit-card"></i> Proceder al pago
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 20px; background-color: #2a6496; color: white;">
+        <p>&copy; 2025 TimeHub. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="session.js"></script>
+    <script src="cart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar y mostrar los productos del carrito
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('cart-items-container');
+            const summarySection = document.getElementById('cart-summary');
+            const actionsSection = document.getElementById('cart-actions');
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h2>Tu carrito está vacío</h2>
+                        <p>No has añadido ningún producto todavía</p>
+                        <a href="index.html" class="cart-btn continue-shopping-btn" style="margin-top: 20px;">
+                            <i class="fas fa-arrow-left"></i> Ver productos
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Mostrar secciones de resumen y acciones
+            summarySection.style.display = 'block';
+            actionsSection.style.display = 'flex';
+            
+            let subtotal = 0;
+            let html = '';
+            
+            // Cargar información de productos desde tienda.json
+            fetch('/tienda.json')
+                .then(response => response.json())
+                .then(data => {
+                    cart.forEach((item, index) => {
+                        const product = data.producto[item.id];
+                        if (product) {
+                            const itemPrice = parseFloat(product.precio) * item.quantity;
+                            subtotal += itemPrice;
+                            
+                            html += `
+                                <div class="cart-item">
+                                    <img src="images/producto${item.id + 1}.png" alt="${product.nombreProducto}" 
+                                         onerror="this.src='images/placeholder.png'">
+                                    <div class="item-info">
+                                        <h3>${product.nombreProducto}</h3>
+                                        <div class="quantity-controls">
+                                            <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                                            <input type="number" class="quantity-input" value="${item.quantity}" 
+                                                   min="1" onchange="updateQuantityInput(${index}, this.value)">
+                                            <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                                        </div>
+                                        <button class="remove-btn" onclick="removeItem(${index})">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                    <div class="item-price">
+                                        ${itemPrice.toFixed(2)} €
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    container.innerHTML = html;
+                    
+                    // Actualizar resumen
+                    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' €';
+                    document.getElementById('total').textContent = subtotal.toFixed(2) + ' €';
+                    
+                    // Actualizar contador del carrito
+                    updateCartCount();
+                })
+                .catch(error => {
+                    console.error("Error al cargar los productos:", error);
+                    container.innerHTML = `
+                        <div class="empty-cart">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h2>Error al cargar el carrito</h2>
+                            <p>Por favor, intenta nuevamente más tarde</p>
+                            <a href="index.html" class="cart-btn continue-shopping-btn" style="margin-top: 20px;">
+                                <i class="fas fa-arrow-left"></i> Volver a la tienda
+                            </a>
+                        </div>
+                    `;
+                });
+        });
+        
+        function updateQuantity(index, change) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart[index]) {
+                cart[index].quantity += change;
+                
+                // Eliminar si la cantidad es menor a 1
+                if (cart[index].quantity < 1) {
+                    cart.splice(index, 1);
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                location.reload(); // Recargar para ver los cambios
+            }
+        }
+        
+        function updateQuantityInput(index, newValue) {
+            const quantity = parseInt(newValue);
+            if (!isNaN(quantity) && quantity > 0) {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                if (cart[index]) {
+                    cart[index].quantity = quantity;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    location.reload();
+                }
+            }
+        }
+        
+        function removeItem(index) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            location.reload();
+        }
+    </script>
+</body>
+</html>

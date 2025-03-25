@@ -43,6 +43,7 @@
 
 ## Mejoras
 - ~~Login con nombre y contraseña~~
+- ~~Añadir o quitar productos del carrito~~
 - Root puede ver los pedidos pendientes
 - Root puede ñadir nuevos productos mediante formulario
 - Control de stock para añadir al carrito (si stock es 0 no puede añadir al carro)

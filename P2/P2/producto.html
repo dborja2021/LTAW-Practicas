@@ -14,6 +14,9 @@
             <button id="logout" style="display: none;">Cerrar sesión</button>
             <a href="login.html" id="login-link">Iniciar sesión</a>
         </div>
+        <div id="cart-icon" style="position: fixed; top: 20px; right: 20px; cursor: pointer;">
+            🛒 <span id="cart-count">0</span>
+        </div>
     </header>
 
     <main>
@@ -24,6 +27,9 @@
                 <p id="precio-producto" class="precio-producto">-- €</p>
                 <p id="stock-producto" class="stock-producto"></p>
                 <p id="descripcion-producto" class="descripcion-producto"></p>
+                <button id="add-to-cart" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Añadir al carrito
+                </button>
                 <a href="index.html" class="volver-link">← Volver a la tienda</a>
             </div>
         </section>
@@ -96,6 +102,20 @@
                 </div>
             `;
         }
+    </script>
+    <script src="cart.js"></script>
+    <script>
+        document.getElementById('add-to-cart')?.addEventListener('click', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = parseInt(urlParams.get('id'));
+            
+            if (!isNaN(productId)) {
+                addToCart(productId);
+            }
+        });
+        
+        // Actualizar contador al cargar la página
+        updateCartCount();
     </script>
 </body>
 </html>
