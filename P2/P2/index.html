@@ -75,19 +75,19 @@
                 `;
             });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar/ocultar carrito según sesión
-            const usuario = JSON.parse(localStorage.getItem('currentUser'));
-            const cartIcon = document.getElementById('cart-icon');
-            
-            if (usuario) {
-                cartIcon.style.display = 'flex';
-                updateCartCount();
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar evento al ícono del carrito
+        document.getElementById('cart-icon').addEventListener('click', function() {
+            if (JSON.parse(localStorage.getItem("currentUser"))) {
+                window.location.href = "carrito.html";
+            } else {
+                if (confirm("Debes iniciar sesión para ver el carrito. ¿Quieres ir a login?")) {
+                    window.location.href = "login.html?redirect=carrito.html";
+                }
             }
-
-            // Cargar productos...
         });
-    </script>
+    });
+</script>
 </body>
 </html>

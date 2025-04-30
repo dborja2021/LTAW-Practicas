@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesar Pedido - TimeHub</title>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <header>
+        <h1>TimeHub - Procesar Pedido</h1>
+        <div id="user-info">
+            <span id="user-name"></span>
+            <button id="logout" style="display: none;">Cerrar sesión</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="formulario-pedido">
+            <h2>Información de Envío y Pago</h2>
+            
+            <div class="resumen-pedido" id="resumen-pedido">
+                <!-- Resumen de productos se cargará aquí -->
+            </div>
+            
+            <form id="form-pedido">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="direccion">Dirección de Envío:</label>
+                    <textarea id="direccion" rows="4" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tarjeta">Número de Tarjeta:</label>
+                    <input type="text" id="tarjeta" placeholder="1234 5678 9012 3456" required>
+                </div>
+                
+                <button type="submit" class="btn-confirmar">Confirmar Pedido</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="session.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+            if (!usuario) {
+                window.location.href = "login.html";
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                window.location.href = "carrito.html";
+                return;
+            }
+            
+            // Mostrar resumen del pedido
+            fetch('/tienda.json')
+                .then(response => response.json())
+                .then(data => {
+                    let html = '<h3>Resumen de tu pedido:</h3><ul>';
+                    let total = 0;
+                    
+                    cart.forEach(item => {
+                        const producto = data.producto[item.id];
+                        if (producto) {
+                            const subtotal = producto.precio * item.quantity;
+                            total += subtotal;
+                            html += `
+                                <li>${producto.nombreProducto} - 
+                                ${item.quantity} x ${producto.precio} € = 
+                                ${subtotal.toFixed(2)} €</li>
+                            `;
+                        }
+                    });
+                    
+                    html += `</ul><p><strong>Total: ${total.toFixed(2)} €</strong></p>`;
+                    document.getElementById('resumen-pedido').innerHTML = html;
+                    
+                    // Rellenar nombre del usuario si existe
+                    if (usuario.nombre_real) {
+                        document.getElementById('nombre').value = usuario.nombre_real;
+                    }
+                });
+            
+            // Procesar formulario
+            document.getElementById('form-pedido').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const nombre = document.getElementById('nombre').value;
+                const direccion = document.getElementById('direccion').value;
+                const tarjeta = document.getElementById('tarjeta').value;
+                
+                // Obtener nombres de productos en lugar de IDs si lo prefieres
+                fetch('/tienda.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const productosEnCarrito = JSON.parse(localStorage.getItem('cart')) || [];
+                        const nombresProductos = productosEnCarrito.map(item => {
+                            const producto = data.producto[item.id];
+                            return producto ? producto.nombreProducto : '';
+                        }).filter(Boolean);
+                        
+                        // Crear objeto de pedido con la estructura solicitada
+                        const nuevoPedido = {
+                            nombre_usuario: JSON.parse(localStorage.getItem("currentUser")).nombre,
+                            direccion: direccion,
+                            tarjeta: tarjeta,
+                            productos: nombresProductos
+                        };
+                        
+                        // Guardar pedido
+                        guardarPedido(nuevoPedido);
+                    });
+            })
+                        
+            function guardarPedido(nuevoPedido) {
+                fetch('/tienda.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.pedidos = data.pedidos || [];
+                        data.pedidos.push(nuevoPedido);
+                        
+                        return fetch('/guardar-pedido', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        });
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Vaciar carrito y redirigir
+                            localStorage.removeItem('cart');
+                            window.location.href = 'confirmacion.html';
+                        } else {
+                            alert('Error al guardar el pedido');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al procesar el pedido');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

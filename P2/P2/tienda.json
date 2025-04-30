@@ -19,7 +19,6 @@
       "email": "pedrito.perez@ltaw.com"
     }
   ],
-  
   "producto": [
     {
       "nombreProducto": "PAC-MAN x CASIO Vintage Colection",
@@ -56,6 +55,14 @@
       "tarjeta": "0987-6543-2109-8765",
       "productos": [
         "PAC-MAN x CASIO Vintage Colection"
+      ]
+    },
+    {
+      "nombre_usuario": "usuario1",
+      "direccion": "mi casa",
+      "tarjeta": "1234 1234 1234 1234",
+      "productos": [
+        "CASIO Multifunción"
       ]
     }
   ]

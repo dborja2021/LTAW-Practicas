@@ -163,6 +163,69 @@ const server = http.createServer((req, res) => {
             res.end(errorContent || "<h1>404 Not Found</h1>");
         });
     }
+
+    if (req.url === '/guardar-pedido' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                fs.writeFileSync(FICHERO_JSON, JSON.stringify(data, null, 2));
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: "Error al guardar el pedido" }));
+            }
+        });
+        return;
+    }
+    if (req.url === '/guardar-pedido' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                fs.writeFileSync(FICHERO_JSON, JSON.stringify(data, null, 2));
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: "Error al guardar el pedido" }));
+            }
+        });
+        return;
+    }
+
+    if (req.url === '/guardar-pedido' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                
+                // Validar estructura de pedidos
+                if (!Array.isArray(data.pedidos)) {
+                    data.pedidos = [];
+                }
+                
+                fs.writeFileSync(FICHERO_JSON, JSON.stringify(data, null, 2));
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: "Error al guardar el pedido" }));
+            }
+        });
+        return;
+    }
 });
 
 // Iniciar el servidor

@@ -17,11 +17,6 @@
         </div>
     </header>
 
-    <div id="cart-icon">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cart-count">0</span>
-    </div>
-
     <main>
         <div class="cart-container">
             <h2 class="cart-title">Tu Carrito de Compras</h2>
@@ -48,9 +43,9 @@
                 <a href="index.html" class="cart-btn continue-shopping-btn">
                     <i class="fas fa-arrow-left"></i> Seguir comprando
                 </a>
-                <a href="#" class="cart-btn checkout-btn">
+                <button id="proceder-pago" class="cart-btn checkout-btn">
                     <i class="fas fa-credit-card"></i> Proceder al pago
-                </a>
+                </button>
             </div>
         </div>
     </main>
@@ -65,18 +60,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             const usuario = JSON.parse(localStorage.getItem("currentUser"));
         
-        if (!usuario) {
-            document.getElementById("cart-items-container").innerHTML = `
-                <div class="empty-cart">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h2>Debes iniciar sesión para ver tu carrito</h2>
-                    <a href="login.html" class="cart-btn continue-shopping-btn">
-                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión
-                    </a>
-                </div>
-            `;
-            return;
-        }
+            if (!usuario) {
+                document.getElementById("cart-items-container").innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h2>Debes iniciar sesión para ver tu carrito</h2>
+                        <a href="login.html" class="cart-btn continue-shopping-btn">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
             // Cargar y mostrar los productos del carrito
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const container = document.getElementById('cart-items-container');
@@ -136,6 +132,8 @@
                                 </div>
                             `;
                         }
+
+
                     });
 
                     container.innerHTML = html;
@@ -146,6 +144,17 @@
                     
                     // Actualizar contador del carrito
                     updateCartCount();
+                    
+                    // Añadir evento al botón de pago
+                    document.getElementById('proceder-pago').addEventListener('click', function() {
+                        if (cart.length === 0) {
+                            alert('Tu carrito está vacío');
+                            return;
+                        }
+                        
+                        // Redirigir a la página de procesar pedido
+                        window.location.href = 'procesar-pedido.html';
+                    });
                 })
                 .catch(error => {
                     console.error("Error al cargar los productos:", error);
@@ -163,6 +172,9 @@
         });
         
         function updateQuantity(index, change) {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+            if (!usuario) return;
+            
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             if (cart[index]) {
                 cart[index].quantity += change;
@@ -173,27 +185,105 @@
                 }
                 
                 localStorage.setItem('cart', JSON.stringify(cart));
-                location.reload(); // Recargar para ver los cambios
+                saveUserCart(usuario.nombre); // <-- Guarda en el carrito del usuario
+                updateCartDisplay(); // Actualiza la visualización sin recargar
             }
-        }
-        
+        }       
+                
         function updateQuantityInput(index, newValue) {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+            if (!usuario) return;
+            
             const quantity = parseInt(newValue);
             if (!isNaN(quantity) && quantity > 0) {
                 const cart = JSON.parse(localStorage.getItem('cart')) || [];
                 if (cart[index]) {
                     cart[index].quantity = quantity;
                     localStorage.setItem('cart', JSON.stringify(cart));
-                    location.reload();
+                    saveUserCart(usuario.nombre); // <-- Guarda en el carrito del usuario
+                    updateCartDisplay(); // Actualiza la visualización sin recargar
                 }
             }
         }
         
         function removeItem(index) {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+            if (!usuario) return;
+            
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             cart.splice(index, 1);
             localStorage.setItem('cart', JSON.stringify(cart));
-            location.reload();
+            saveUserCart(usuario.nombre); // <-- Guarda en el carrito del usuario
+            updateCartDisplay(); // Actualiza la visualización sin recargar
+        }
+
+        function updateCartDisplay() {
+            const usuario = JSON.parse(localStorage.getItem("currentUser"));
+            if (!usuario) return;
+            
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('cart-items-container');
+            const summarySection = document.getElementById('cart-summary');
+            const actionsSection = document.getElementById('cart-actions');
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h2>Tu carrito está vacío</h2>
+                        <p>No has añadido ningún producto todavía</p>
+                        <a href="index.html" class="cart-btn continue-shopping-btn" style="margin-top: 20px;">
+                            <i class="fas fa-arrow-left"></i> Ver productos
+                        </a>
+                    </div>
+                `;
+                summarySection.style.display = 'none';
+                actionsSection.style.display = 'none';
+                updateCartCount();
+                return;
+            }
+
+            let subtotal = 0;
+            let html = '';
+            
+            fetch('/tienda.json')
+                .then(response => response.json())
+                .then(data => {
+                    cart.forEach((item, index) => {
+                        const product = data.producto[item.id];
+                        if (product) {
+                            const itemPrice = parseFloat(product.precio) * item.quantity;
+                            subtotal += itemPrice;
+                            
+                            html += `
+                                <div class="cart-item">
+                                    <img src="images/producto${item.id + 1}.png" alt="${product.nombreProducto}" 
+                                        onerror="this.src='images/placeholder.png'">
+                                    <div class="item-info">
+                                        <h3>${product.nombreProducto}</h3>
+                                        <div class="quantity-controls">
+                                            <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                                            <input type="number" class="quantity-input" value="${item.quantity}" 
+                                                min="1" onchange="updateQuantityInput(${index}, this.value)">
+                                            <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                                        </div>
+                                        <button class="remove-btn" onclick="removeItem(${index})">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                    <div class="item-price">
+                                        ${itemPrice.toFixed(2)} €
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    container.innerHTML = html;
+                    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' €';
+                    document.getElementById('total').textContent = subtotal.toFixed(2) + ' €';
+                    updateCartCount();
+                });
         }
     </script>
 </body>
