@@ -151,6 +151,46 @@ button:hover {
     background-color: var(--secondary-color);
 }
 
+.message div {
+    white-space: pre-line;
+}
+
+.message .message-sender {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.message.system {
+    color: #666 !important; /* Color fijo para mensajes del sistema */
+}
+
+#typing-indicator {
+    transition: opacity 0.15s ease-out;
+    height: 20px;
+    overflow: hidden;
+}
+
+.typing-indicator div {
+    margin: 2px 0;
+    animation: pulse 1.5s infinite;
+}
+
+#toggleSound {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    z-index: 100;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
 @media (max-width: 600px) {
     .container {
         border-radius: 0;

@@ -8,21 +8,31 @@ const usersCount = document.getElementById('users-count');
 let nickname = null;
 let isTyping = false;
 let typingTimeout;
+const typingUsers = {};
+const receiveSound = document.getElementById('receiveSound');
+let soundEnabled = true;
 
 // Función para añadir un mensaje al chat
-function addMessage(type, sender, text, timestamp = null) {
+function addMessage(type, sender, text, timestamp = null, color = '#000000') {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', type);
+
+//    if (type === 'chat') {
+//        const userColor = getUserColor(sender); // Función que verifica abajo
+//        messageElement.style.color = userColor;
+//    }
     
     if (type !== 'system') {
         const senderElement = document.createElement('div');
         senderElement.classList.add('message-sender');
         senderElement.textContent = sender;
+        senderElement.style.color = color
         messageElement.appendChild(senderElement);
     }
     
     const textElement = document.createElement('div');
-    textElement.textContent = text;
+    textElement.innerHTML = text.replace(/\n/g, '<br>');
+    textElement.style.color = type === 'system' ? '#666' : color; 
     messageElement.appendChild(textElement);
     
     if (timestamp && type !== 'system') {
@@ -61,6 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setNickname();
 });
 
+document.getElementById('toggleSound').addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('toggleSound').textContent = soundEnabled ? '🔊' : '🔇';
+});
+
 // Evento al enviar un mensaje
 function sendMessage() {
     const message = messageInput.value.trim();
@@ -68,11 +83,18 @@ function sendMessage() {
         socket.emit('chatMessage', message);
         messageInput.value = '';
         
-        // Notificar que dejó de escribir
-        if (isTyping) {
-            socket.emit('stopTyping');
-            isTyping = false;
+        if (soundEnabled) {
+            sendSound.currentTime = 0; // Rebobinar
+            sendSound.play().catch(e => console.log("Error de sonido:", e));
         }
+
+        socket.emit('stopTyping');
+
+        // Notificar que dejó de escribir
+//        if (isTyping) {
+//            socket.emit('stopTyping');
+//            isTyping = false;
+//        }
     }
 }
 
@@ -84,14 +106,22 @@ messageInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Detectar cuando el usuario está escribiendo
 messageInput.addEventListener('input', () => {
-    if (!isTyping && messageInput.value.trim() !== '') {
-        socket.emit('typing');
-        isTyping = true;
-    } else if (isTyping && messageInput.value.trim() === '') {
+    if (messageInput.value.trim() !== '') {
+        if (!typingTimeout) {
+            socket.emit('typing');
+        }
+        
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            socket.emit('stopTyping');
+            typingTimeout = null;
+        }, 1500);
+    } else {
+        // Si el campo está vacío, detener inmediatamente
         socket.emit('stopTyping');
-        isTyping = false;
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
     }
 });
 
@@ -103,20 +133,25 @@ socket.on('welcome', (data) => {
 socket.on('message', (data) => {
     if (data.type === 'chat') {
         const messageType = data.sender === nickname ? 'user' : 'other';
-        addMessage(messageType, data.sender, data.text, data.timestamp);
+        addMessage(messageType, data.sender, data.text, data.timestamp, data.color);
     } else if (data.type === 'system') {
         addMessage('system', '', data.text);
     }
-});
 
-socket.on('userTyping', (name) => {
-    if (name !== nickname) {
-        showTypingIndicator(name);
+    if (soundEnabled && data.sender !== nickname) {
+        receiveSound.currentTime = 0;
+        receiveSound.play().catch(e => console.log("Error de sonido:", e));
     }
 });
 
-socket.on('userStopTyping', () => {
-    typingIndicator.textContent = '';
+socket.on('userTyping', (data) => {
+    typingUsers[data.id] = data.nickname;
+    updateTypingIndicator();
+});
+
+socket.on('userStopTyping', (data) => {
+    delete typingUsers[data.id];
+    updateTypingIndicator();
 });
 
 socket.on('updateUsers', (count) => {
@@ -138,3 +173,19 @@ socket.on('reconnect', () => {
         socket.emit('setNickname', nickname);
     }
 });
+
+function updateTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    typingIndicator.innerHTML = '';
+    
+    const usersTyping = Object.values(typingUsers);
+    if (usersTyping.length > 0) {
+        const text = usersTyping.length === 1 
+            ? `✍️ ${usersTyping[0]} está escribiendo...`
+            : `✍️ ${usersTyping.join(', ')} están escribiendo...`;
+        
+        const indicator = document.createElement('div');
+        indicator.textContent = text;
+        typingIndicator.appendChild(indicator);
+    }
+}
