@@ -6,8 +6,8 @@ const colors = require('colors');
 const app = express();
 const PORT = 3000;
 
-const nicknames = {}; // Almacena los nicknames por socket.id
-const typingUsers = new Set(); // Almacena los usuarios que están escribiendo
+const nicknames = {};
+const typingUsers = new Set();
 
 // Configuración de seguridad
 app.use((req, res, next) => {
@@ -48,7 +48,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('setNickname', (nickname) => {
-        nicknames[socket.id] = nickname;
+        nicknames[socket.id] = {
+            name: nickname,
+            color: '#000000'
+        };
 
         socket.emit('message', {
             type: 'system',
@@ -65,42 +68,85 @@ io.on('connection', (socket) => {
     });
 
     socket.on('typing', () => {
-        const nickname = nicknames[socket.id];
-        if (nickname && !typingUsers.has(nickname)) {
-            typingUsers.add(nickname);
-            socket.broadcast.emit('userTyping', nickname);
+        const user = nicknames[socket.id];
+        if (user && !typingUsers.has(socket.id)) {
+            typingUsers.add(socket.id);
+            socket.broadcast.emit('userTyping', {
+                nickname: user.name,
+                id: socket.id
+            });
         }
     });
 
     socket.on('stopTyping', () => {
-        const nickname = nicknames[socket.id];
-        if (nickname && typingUsers.has(nickname)) {
-            typingUsers.delete(nickname);
-            socket.broadcast.emit('userStopTyping');
+        if (typingUsers.has(socket.id)) {
+            typingUsers.delete(socket.id);
+            socket.broadcast.emit('userStopTyping',{
+                is: socket.id
+            });
         }
     });
 
-    socket.on('chatMessage', (msg) => {
-        const nickname = nicknames[socket.id] || 'Anónimo';
+    socket.on('disconnect', () => {
+        if (typingUsers.has(socket.id)) {
+            typingUsers.delete(socket.id);
+            io.emit('userStopTyping', {
+                id: socket.id
+            });
+        }
+    });
+
+
+
+    socket.on('chatMessage', async (msg) => {
+
+        if (!nicknames[socket.id]) {
+            nicknames[socket.id] = {
+                name: 'Anónimo',
+                color: '#000000'
+            };
+        }
+        const currentUser = nicknames[socket.id];
 
         if (msg.startsWith('/')) {
             let response = '';
-            switch (msg.trim().toLowerCase()) {
+            const args = msg.trim().split(' ');
+            const command = args[0].toLowerCase();
+
+            switch (command) {
                 case '/help':
-                    response = '📝 Comandos disponibles:\n' +
-                        '/help - Muestra esta ayuda\n' +
-                        '/list - Usuarios conectados\n' +
-                        '/hello - Saludo del servidor\n' +
-                        '/date - Fecha y hora actual\n'
+                    response = '📝 Comandos disponibles: \n' +
+                        '   ⁉️ /help - Muestra esta ayuda \n' +
+                        '   📃 /list - Usuarios conectados \n' +
+                        '   🖐️ /hello - Saludo del servidor \n' +
+                        '   📅 /date - Fecha y hora actual \n'+
+                        '   🖍️ /color - Cambiar color de la fuente ';
                     break;
                 case '/list':
-                    response = `👥 Usuarios conectados: ${connectedUsers}`;
+                    const userList = Object.values(nicknames).map(user => user.name).join(', ');
+                    response = `👥 Usuarios conectados (${connectedUsers}): ${userList}`;
                     break;
                 case '/hello':
                     response = '👋 ¡Hola! ¿Cómo estás?';
                     break;
                 case '/date':
                     response = `📅 Fecha actual: ${new Date().toLocaleString()}`;
+                    break;
+                case '/color':
+                    const validColors = {
+                        'red': '#ff4d4d',
+                        'blue': '#4d79ff',
+                        'green': '#4dff4d',
+                        'purple': '#b34dff',
+                        'orange': '#ffa64d'
+                    };
+                    
+                    if (args.length < 2 || !validColors[args[1]]) {
+                        response = `⚠️ Uso: /color <color>\nColores disponibles: ${Object.keys(validColors).join(', ')}`;
+                    } else {
+                        nicknames[socket.id].color = validColors[args[1]];
+                        response = `🎨 Color cambiado a ${args[1]}`;
+                    }
                     break;
             }
 
@@ -111,8 +157,9 @@ io.on('connection', (socket) => {
         } else {
             io.emit('message', {
                 type: 'chat',
-                sender: nickname,
+                sender: currentUser.name,
                 text: msg,
+                color: currentUser.color,
                 timestamp: new Date().toLocaleTimeString()
             });
         }
