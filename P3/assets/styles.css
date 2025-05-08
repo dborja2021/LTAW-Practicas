@@ -1,0 +1,187 @@
+/* assets/styles.css */
+
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+h2, h3 {
+    color: #2980b9;
+    margin-top: 0;
+}
+
+/* Cajas de información */
+.info-box, .url-box, .log-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+}
+
+.info-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+}
+
+.url-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background-color: #f0f8ff;
+    border-left: 4px solid #2980b9;
+}
+
+.url-box h3 {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Input y botones */
+#server-url {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    min-width: 300px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#copy-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+#copy-btn:hover {
+    background-color: #2980b9;
+}
+
+.btn {
+    background-color: #2ecc71;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.btn:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}
+
+/* Contenedor de logs */
+.log-container {
+    background-color: #f8f9fa;
+    border-left: 4px solid #2ecc71;
+}
+
+#server-logs {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    max-height: 500px;
+    overflow-y: auto;
+    background: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    margin-top: 10px;
+}
+
+#server-logs div {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    word-break: break-word;
+}
+
+/* Mensajes de chat vs sistema */
+#server-logs div[data-type="chat"] {
+    color: #2c3e50;
+}
+
+#server-logs div[data-type="system"] {
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Efectos y estados */
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+/* Scrollbar personalizada */
+#server-logs::-webkit-scrollbar {
+    width: 8px;
+}
+
+#server-logs::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#server-logs::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 4px;
+}
+
+#server-logs::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    #server-url {
+        min-width: 100%;
+    }
+    
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+}
