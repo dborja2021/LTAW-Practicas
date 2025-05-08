@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Servidor de Chat - Electron</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Panel del Servidor</h1>
+        
+        <div class="info-box">
+            <h2>⚙️ Información del Sistema</h2>
+            <p><strong>Node:</strong> <span id="node-version"></span></p>
+            <p><strong>Electron:</strong> <span id="electron-version"></span></p>
+            <p><strong>Chrome:</strong> <span id="chrome-version"></span></p>
+        </div>
+
+        <div class="url-box">
+            <h3>🌐 URL para clientes</h3>
+            <input id="server-url" type="text" readonly>
+            <button id="copy-btn">Copiar</button>
+        </div>
+
+        <button id="test-btn" class="btn">💬 Enviar mensaje de prueba</button>
+
+        <div class="log-container">
+            <h3>📜 Registro de actividad</h3>
+            <div id="server-logs"></div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con Socket.IO</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <audio id="receiveSound" src="/sounds/receive.mp3" preload="auto"></audio>
+    <div class="container">
+        <header>
+            <h1>Chat Grupal</h1>
+            <div class="user-count">👥 <span id="users-count">0</span> usuarios</div>
+        </header>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages"></div>
+            <div id="typing-indicator" class="typing-indicator"></div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Escribe tu mensaje..." autocomplete="off">
+                <button id="send-button">Enviar</button>
+                <button id="toggleSound">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
