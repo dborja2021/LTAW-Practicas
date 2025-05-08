@@ -38,20 +38,62 @@ function createWindow() {
 }
 
 function startServer() {
-    serverProcess = spawn('node', ['server/server.js']);
+    serverProcess = spawn('node', ['server/server.js'], {
+        stdio: ['pipe', 'pipe', 'pipe']  // Asegura que stdin sea pipe
+    });
 
+    // Maneja errores de stdin
+    serverProcess.stdin.on('error', (err) => {
+        console.error('Error writing to server process:', err);
+    });
+    
+    // Capturar logs del servidor
     serverProcess.stdout.on('data', (data) => {
-        const log = data.toString();
-        if (mainWindow) {
-            mainWindow.webContents.send('server-log', log);
-        }
-        console.log('[Server]', log);
+      const log = data.toString().trim();
+      if (log && mainWindow) {
+        mainWindow.webContents.send('server-log', {
+          type: 'system',
+          message: log
+        });
+      }
     });
 
-    serverProcess.stderr.on('data', (data) => {
+    // Mensajes del chat (proceso IPC)
+    serverProcess.on('message', (msg) => {
+        if (!mainWindow) return;
+    
+        switch (msg.type) {
+          case 'chat-log':
+            mainWindow.webContents.send('server-log', {
+              type: 'chat',
+              sender: msg.data.sender,
+              message: msg.data.message,
+              color: msg.data.color,
+              timestamp: msg.data.timestamp
+            });
+            break;
+          case 'system-log':
+            mainWindow.webContents.send('server-log', {
+              type: 'system',
+              message: msg.data
+            });
+            break;
+        }
+      });
+    
+      serverProcess.stderr.on('data', (data) => {
         console.error('[Server Error]', data.toString());
-    });
+      });
+    }
+
+// 👇 Función auxiliar para enviar logs al renderer
+function sendLogToRenderer(type, message, color = '#333') {
+    if (mainWindow) {
+        mainWindow.webContents.send('server-log', { type, message, color });
+    }
+    console.log(`[${type}]`, message); // También aparece en la consola del servidor
 }
+
 
 app.whenReady().then(createWindow);
 
@@ -65,8 +107,13 @@ app.on('window-all-closed', () => {
 
 // IPC Handlers
 ipcMain.handle('get-ip-address', () => getLocalIP());
+
 ipcMain.on('send-test-message', () => {
     if (serverProcess) {
-        serverProcess.stdin.write('test-message\n');
+        // Envía el mensaje a través de stdin
+        serverProcess.stdin.write(JSON.stringify({
+            type: 'test-message',
+            data: { message: 'Mensaje de prueba del servidor' }
+        }) + '\n');
     }
 });
